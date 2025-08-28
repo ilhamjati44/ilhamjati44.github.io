@@ -1,150 +1,357 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!--Import Google Icon Font-->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!--Import materialize.css-->
-    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Laboratorium Enkripsi & Dekripsi — Edukasi by IJ</title>
+  <meta name="description" content="Demo edukasi enkripsi/dekripsi: Caesar, Vigenère, XOR (demo), dan AES-GCM (WebCrypto) — pengabdian minimal lulusan RSK.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f8fafc;
+      --panel: #fff;
+      --muted: #64748b;
+      --text: #0f172a;
+      --primary: #0ea5e9;
+      --ring: rgba(14,165,233,.35);
+      --border: #e2e8f0;
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+      color:var(--text);
+    }
+    .container{max-width:1150px; margin:0 auto; padding:28px 16px 60px}
+    h1{font-size: clamp(24px, 4vw, 34px); margin:0 0 8px; font-weight:800; letter-spacing:-.02em}
+    p.lead{color:var(--muted); max-width:800px; margin:0 0 20px}
+    .grid{display:grid; gap:18px}
+    @media (min-width: 980px){ .grid-3{grid-template-columns:2fr 1fr} }
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); box-shadow:0 10px 30px rgba(15,23,42,.04)}
+    .card .head{padding:18px 18px 0}
+    .card .body{padding:18px}
+    label{font-size:13px; color:#475569; display:block; margin-bottom:6px}
+    textarea, input, select, button{
+      font:inherit;
+    }
+    textarea, input, select{
+      width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:#fff;
+      outline:none; transition:border .2s, box-shadow .2s;
+    }
+    textarea:focus, input:focus, select:focus{ border-color:var(--primary); box-shadow:0 0 0 4px var(--ring) }
+    textarea{min-height:160px; resize:vertical}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#fff; cursor:pointer;
+      transition:transform .02s ease, box-shadow .2s, background .2s;
+    }
+    .btn.primary{ background:var(--primary); color:#fff; border-color:transparent }
+    .btn:active{ transform:translateY(1px) }
+    .muted{ color:var(--muted) }
+    .explain{font-size:13px; color:var(--muted); background:#f1f5f9; border:1px solid var(--border); border-radius:12px; padding:12px}
+    .kvs{display:grid; grid-template-columns:1fr 1fr; gap:8px; text-align:center; margin-top:8px}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    footer{color:#64748b; font-size:12px; margin-top:14px}
+    .bad{ color:#dc2626; font-size:13px }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap }
+    .chip{ font-size:12px; color:#0f172a; background:#f1f5f9; border:1px solid var(--border); border-radius:999px; padding:6px 10px }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Laboratorium Enkripsi & Dekripsi — Edukasi by IJ</h1>
+    <p class="lead">Coba algoritma: <b>Caesar</b>, <b>Vigenère</b>, <b>XOR (demo)</b>, dan <b>AES‑GCM</b> (WebCrypto). Aplikasi ini karya anak RSK yang lulus tahun 2023.</p>
 
-    <!-- my CSS -->
-    <link rel="stylesheet" href="css/style.css">
-    
-    <!--Let browser know website is optimized for mobile-->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-    <title>Web Programming UNPAS</title>
-  </head>
-
-  <body>
-
-    <!-- navbar -->
-    <div class="navbar-fixed">
-      <nav class="blue darken-2">
-        <div class="container">
-          <div class="nav-wrapper">
-            <a href="#!" class="brand-logo">WPU</a>
-            <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-            <ul class="right hide-on-med-and-down">
-              <li><a href="">About Us</a></li>
-              <li><a href="">Clients</a></li>
-              <li><a href="">Services</a></li>
-              <li><a href="">Portfolio</a></li>
-              <li><a href="">Contact Us</a></li>
-            </ul>
+    <div class="card">
+      <div class="head"><h2 style="font-size:18px; margin:0 0 8px">Pengaturan</h2></div>
+      <div class="body grid grid-3">
+        <div>
+          <label for="inputText">Pesan Masukan / Teks untuk Didekripsi</label>
+          <textarea id="inputText" placeholder="Tulis atau tempel pesan di sini...">Selamat belajar kriptografi! Ini contoh sederhana.</textarea>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="sampleBtn">Contoh cepat</button>
+            <button class="btn" id="resetBtn">Reset</button>
           </div>
         </div>
-      </nav>
-    </div>
 
-    <!-- sidenav -->
-    <ul class="sidenav" id="mobile-nav">
-      <li><a href="">About Us</a></li>
-      <li><a href="">Clients</a></li>
-      <li><a href="">Services</a></li>
-      <li><a href="">Portfolio</a></li>
-      <li><a href="">Contact Us</a></li>
-    </ul>
-
-    <!-- slider -->
-    <div class="slider">
-      <ul class="slides">
-        <li>
-          <img src="img/slider/1.png">
-          <div class="caption left-align">
-            <h3>This is our big Tagline!</h3>
-            <h5 class="light grey-text text-lighten-3">Here's our small slogan.</h5>
-          </div>
-        </li>
-        <li>
-          <img src="img/slider/2.png">
-          <div class="caption right-align">
-            <h3>This is our big Tagline!</h3>
-            <h5 class="light grey-text text-lighten-3">Here's our small slogan.</h5>
-          </div>
-        </li>
-        <li>
-          <img src="img/slider/3.png">
-          <div class="caption center-align">
-            <h3>This is our big Tagline!</h3>
-            <h5 class="light grey-text text-lighten-3">Here's our small slogan.</h5>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- About Us -->
-    <section id="about" class="about">
-      <div class="container">
-        <div class="row">
-          <h3 class="center light grey-text text-darken-3">About Us</h3>
-          <div class="col m6 light">
-            <h5>We Are Professionals</h5>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quasi quo accusantium repellat similique ipsa doloribus in aliquam earum eaque, possimus necessitatibus sunt repellendus ullam recusandae voluptas dolore debitis saepe facere.</p>
-          </div>
-          <div class="col m6 light">
-            <p>WEB DEVELOPMENT</p>
-            <div class="progress">
-                <div class="determinate blue" style="width: 95%"></div>
+        <div>
+          <div class="row" style="align-items:center; margin-bottom:10px">
+            <div style="flex:1">
+              <label for="mode">Mode</label>
+              <select id="mode">
+                <option value="encrypt">Enkripsi</option>
+                <option value="decrypt">Dekripsi</option>
+              </select>
             </div>
-            <p>MOBILE APP DEVELOPMENT</p>
-            <div class="progress">
-                <div class="determinate blue" style="width: 85%"></div>
-            </div>
-            <p>GAME DEVELOPMENT</p>
-            <div class="progress">
-                <div class="determinate blue" style="width: 90%"></div>
+            <div style="flex:1">
+              <label for="algo">Algoritma</label>
+              <select id="algo">
+                <option value="caesar">Caesar (Geser Huruf)</option>
+                <option value="vigenere">Vigenère (Kunci Teks)</option>
+                <option value="xor">XOR (Demo)</option>
+                <option value="aes">AES‑GCM (Modern)</option>
+              </select>
             </div>
           </div>
+
+          <div id="caesarBox">
+            <label for="shift">Geser (0–25)</label>
+            <input id="shift" type="number" min="0" max="25" value="3" />
+          </div>
+
+          <div id="keyBox" style="display:none">
+            <label for="keyInput"><span id="keyLabel">Kunci</span></label>
+            <input id="keyInput" type="text" placeholder="contoh: RAHASIA" value="RAHASIA" />
+          </div>
+
+          <div class="explain" id="explain" style="margin-top:10px"></div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" id="runBtn">Jalankan</button>
+            <button class="btn" id="swapBtn">Pindahkan ke Input</button>
+          </div>
+          <div id="err" class="bad" style="margin-top:8px"></div>
+        </div>
+
+        <div>
+          <label for="outputText">Hasil</label>
+          <textarea id="outputText" placeholder="Hasil akan muncul di sini..." readonly></textarea>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="copyBtn">Salin</button>
+          </div>
+          <p class="muted" style="font-size:12px">Catatan: Untuk AES‑GCM, hasil diserialisasi menjadi format <span class="mono">aesgcm:iter:salt:iv:data</span> (bagian setelah prefix dalam Base64). Simpan seluruh string untuk dekripsi.</p>
         </div>
       </div>
-    </section>
-    
-
-    <!-- Clients -->
-    <div class="parallax-container">
-      <div class="parallax"><img src="img/slider/4.png"></div>
-
-      <div class="container clients">
-        <h3 class="center light white-text">Our Clients</h3>
-        <div class="row">
-          <div class="col m4 s12 center">
-            <img src="img/clients/gojek.png">
-          </div>
-          <div class="col m4 s12 center">
-            <img src="img/clients/tokopedia.png">
-          </div>
-          <div class="col m4 s12 center">
-            <img src="img/clients/traveloka.png">
-          </div>
-        </div>
-      </div>
     </div>
 
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><div class="body">
+        <h3 style="margin:0 0 6px; font-size:16px">Caesar</h3>
+        <p class="muted">Menggeser setiap huruf sejauh <em>n</em> posisi. Mudah dipatahkan melalui analisis frekuensi.</p>
+      </div></div>
+      <div class="card"><div class="body">
+        <h3 style="margin:0 0 6px; font-size:16px">Vigenère</h3>
+        <p class="muted">Menggunakan kunci berupa kata/kalimat untuk menentukan besar geser tiap huruf.</p>
+      </div></div>
+      <div class="card"><div class="body">
+        <h3 style="margin:0 0 6px; font-size:16px">AES‑GCM</h3>
+        <p class="muted">Standar modern dengan autentikasi. Gunakan kata sandi kuat dan simpan paket lengkap untuk dekripsi.</p>
+      </div></div>
+    </div>
 
-    <!--JavaScript at end of body for optimized loading-->
-    <script type="text/javascript" src="js/materialize.min.js"></script>
-    <script>
-      const sideNav = document.querySelectorAll('.sidenav');
-      M.Sidenav.init(sideNav);
+    <footer> Dibuat untuk tujuan edukasi. Jangan gunakan skema klasik (Caesar/Vigenère/XOR) untuk keamanan nyata. Gunakan AES‑GCM atau protokol modern lain untuk aplikasi sungguhan. </footer>
+  </div>
 
-      const slider = document.querySelectorAll('.slider');
-      M.Slider.init(slider, {
-        indicators: false,
-        height: 500,
-        transition: 600,
-        interval: 3000
-      });
+<script>
+// ===== Helpers =====
+const $ = (id) => document.getElementById(id);
+const inputEl = $("inputText");
+const outputEl = $("outputText");
+const modeEl = $("mode");
+const algoEl = $("algo");
+const shiftEl = $("shift");
+const keyBox = $("keyBox");
+const keyInput = $("keyInput");
+const keyLabel = $("keyLabel");
+const caesarBox = $("caesarBox");
+const explainEl = $("explain");
+const errEl = $("err");
 
-      const parallax = document.querySelectorAll('.parallax');
-      M.Parallax.init(parallax);
+const b64 = {
+  encode(buf){
+    return btoa(String.fromCharCode(...new Uint8Array(buf)));
+  },
+  decode(str){
+    const bin = atob(str);
+    const out = new Uint8Array(bin.length);
+    for (let i=0;i<bin.length;i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+};
+const text2b = (t) => new TextEncoder().encode(t);
+const b2text = (b) => new TextDecoder().decode(b);
 
-    </script>
-  </body>
+// ===== Classical =====
+function normalizeAlpha(ch){
+  const code = ch.charCodeAt(0);
+  if (code>=65 && code<=90) return { base:65, idx:code-65, upper:true };
+  if (code>=97 && code<=122) return { base:97, idx:code-97, upper:false };
+  return null;
+}
+function caesarShift(text, shift){
+  const s = ((shift % 26) + 26) % 26;
+  return [...text].map(ch => {
+    const n = normalizeAlpha(ch);
+    if (!n) return ch;
+    const shifted = (n.idx + s) % 26;
+    return String.fromCharCode(n.base + shifted);
+  }).join("");
+}
+const caesarEncrypt = (t,k)=> caesarShift(t,k);
+const caesarDecrypt = (t,k)=> caesarShift(t,-k);
+
+function vigenere(t, key, dir=1){
+  if (!key) return t;
+  const k = key.replace(/[^A-Za-z]/g, "").toLowerCase();
+  if (!k.length) return t;
+  let j=0;
+  return [...t].map(ch=>{
+    const n = normalizeAlpha(ch);
+    if (!n) return ch;
+    const s = (k.charCodeAt(j % k.length) - 97) * dir;
+    j++;
+    const shifted = ((n.idx + s) % 26 + 26) % 26;
+    return String.fromCharCode(n.base + shifted);
+  }).join("");
+}
+const vigenereEncrypt = (t,k)=> vigenere(t,k,1);
+const vigenereDecrypt = (t,k)=> vigenere(t,k,-1);
+
+function xorCipher(text, key){
+  if (!key) return text;
+  const tb = text2b(text);
+  const kb = text2b(key);
+  const out = new Uint8Array(tb.length);
+  for (let i=0;i<tb.length;i++) out[i] = tb[i] ^ kb[i % kb.length];
+  return b64.encode(out);
+}
+function xorDecipher(b64in, key){
+  if (!key) return b64in;
+  const cb = b64.decode(b64in);
+  const kb = text2b(key);
+  const out = new Uint8Array(cb.length);
+  for (let i=0;i<cb.length;i++) out[i] = cb[i] ^ kb[i % kb.length];
+  return b2text(out);
+}
+
+// ===== Modern (AES-GCM) =====
+function randBytes(n){
+  const b = new Uint8Array(n);
+  crypto.getRandomValues(b);
+  return b;
+}
+async function deriveKey(passphrase, salt, iterations=120000){
+  const baseKey = await crypto.subtle.importKey("raw", text2b(passphrase), {name:"PBKDF2"}, false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name:"PBKDF2", salt, iterations, hash:"SHA-256" },
+    baseKey,
+    { name:"AES-GCM", length:256 },
+    false,
+    ["encrypt","decrypt"]
+  );
+}
+async function aesEncrypt(plainText, passphrase){
+  const salt = randBytes(16);
+  const iv = randBytes(12);
+  const key = await deriveKey(passphrase, salt);
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, text2b(plainText));
+  return ["aesgcm","120000", b64.encode(salt), b64.encode(iv), b64.encode(ct)].join(":");
+}
+async function aesDecrypt(bundle, passphrase){
+  const parts = bundle.split(":");
+  if (parts.length < 5 || parts[0] !== "aesgcm") throw new Error("Format AES-GCM tidak valid.");
+  const iterations = parseInt(parts[1],10) || 120000;
+  const salt = b64.decode(parts[2]);
+  const iv = b64.decode(parts[3]);
+  const data = b64.decode(parts[4]);
+  const baseKey = await crypto.subtle.importKey("raw", text2b(passphrase), {name:"PBKDF2"}, false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name:"PBKDF2", salt, iterations, hash:"SHA-256" },
+    baseKey,
+    { name:"AES-GCM", length:256 },
+    false,
+    ["decrypt"]
+  );
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
+  return b2text(pt);
+}
+
+// ===== UI logic =====
+function updateControls(){
+  const algo = algoEl.value;
+  if (algo === "caesar"){
+    caesarBox.style.display = "";
+    keyBox.style.display = "none";
+  } else {
+    caesarBox.style.display = "none";
+    keyBox.style.display = "";
+    keyLabel.textContent = (algo === "aes") ? "Kata Sandi" : "Kunci";
+    keyInput.type = (algo === "aes") ? "password" : "text";
+    keyInput.placeholder = (algo === "aes") ? "Masukkan kata sandi yang kuat" : "contoh: RAHASIA";
+  }
+  updateExplain();
+}
+function updateExplain(){
+  const algo = algoEl.value;
+  const shift = parseInt(shiftEl.value || "0",10);
+  const key = keyInput.value || "";
+  if (algo === "caesar"){
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let html = '<div class="kvs"><div><b>Asli</b></div><div><b>Hasil</b></div>';
+    for (let i=0;i<alphabet.length;i++){
+      const from = alphabet[i];
+      const to = alphabet[(i + ((shift%26)+26)%26) % 26];
+      html += `<div class="mono">${from}</div><div class="mono">${to}</div>`;
+    }
+    html += "</div>";
+    explainEl.innerHTML = "<div class='muted'>Tabel pergeseran huruf (Caesar).</div>" + html;
+  } else if (algo === "vigenere"){
+    const clean = key.replace(/[^A-Za-z]/g, "").toUpperCase() || "KUNCI";
+    explainEl.innerHTML = `<div class='muted'>Huruf digeser sesuai huruf pada kunci: A=0, B=1, ..., Z=25. Non-alfabet tidak berubah.</div><div class='mono' style='font-size:12px; margin-top:6px'>Kunci dibersihkan: ${clean}</div>`;
+  } else {
+    explainEl.innerHTML = "<div class='muted'>AES‑GCM menggunakan IV acak dan kunci turunan PBKDF2 dari kata sandi + salt. Hasil terenkripsi dikemas dalam format: <span class='mono'>aesgcm:iter:salt:iv:data</span>.</div>";
+  }
+}
+async function run(){
+  errEl.textContent = "";
+  const algo = algoEl.value;
+  const mode = modeEl.value;
+  const input = inputEl.value;
+  try{
+    if (mode === "encrypt"){
+      if (algo === "caesar") outputEl.value = caesarEncrypt(input, parseInt(shiftEl.value||"0",10));
+      else if (algo === "vigenere") outputEl.value = vigenereEncrypt(input, keyInput.value);
+      else if (algo === "xor") outputEl.value = xorCipher(input, keyInput.value);
+      else if (algo === "aes") outputEl.value = await aesEncrypt(input, keyInput.value);
+    } else {
+      if (algo === "caesar") outputEl.value = caesarDecrypt(input, parseInt(shiftEl.value||"0",10));
+      else if (algo === "vigenere") outputEl.value = vigenereDecrypt(input, keyInput.value);
+      else if (algo === "xor") outputEl.value = xorDecipher(input, keyInput.value);
+      else if (algo === "aes") outputEl.value = await aesDecrypt(input, keyInput.value);
+    }
+  }catch(e){
+    console.error(e);
+    errEl.textContent = e.message || "Terjadi kesalahan.";
+  }
+}
+
+$("runBtn").addEventListener("click", run);
+$("swapBtn").addEventListener("click", () => {
+  inputEl.value = outputEl.value;
+  outputEl.value = "";
+});
+$("resetBtn").addEventListener("click", () => {
+  inputEl.value = "";
+  outputEl.value = "";
+  keyInput.value = "";
+  shiftEl.value = "3";
+  errEl.textContent = "";
+  updateExplain();
+});
+$("copyBtn").addEventListener("click", () => {
+  navigator.clipboard.writeText(outputEl.value || "");
+});
+$("sampleBtn").addEventListener("click", () => {
+  inputEl.value = "Halo dunia! Ini adalah pesan contoh untuk uji coba.";
+});
+algoEl.addEventListener("change", updateControls);
+shiftEl.addEventListener("input", updateExplain);
+keyInput.addEventListener("input", updateExplain);
+updateControls();
+</script>
+</body>
 </html>
-
-
-
-
-
-
-
